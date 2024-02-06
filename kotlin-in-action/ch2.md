@@ -15,6 +15,33 @@
 
 ### 2.2.2 커스텀 접근자
 
+
+```kotlin
+class Rectangle(val height: Int, val width: Int) {
+    val isSquare: Boolean
+        get() {
+            return height == width
+        }
+}
+
+// get 간단 버전
+class Rectangle(val height: Int, val width: Int) {
+    val isSquare: Boolean
+    	get() = height == width        
+}
+
+fun main(args: Array<String>) {
+    
+    val rectangle = Rectangle(41, 43)
+    println("정사각형 인가요? : ${rectangle.isSquare}") // 정사각형 인가요? : false
+}
+```
+
+
+
+
+
+
 ### 2.2.3 코틀린 소스코드 구조 : 디렉터리와 패키지
 
 ## 2.3 선택 표현과 처리 : enum과 when
