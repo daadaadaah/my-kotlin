@@ -838,6 +838,168 @@ fun judgeNumber2(number: Int) {
 </tr>
 </table>
 
+## Lec 06. 코틀린에서 반복문을 다루는 방법
+### 1. for-each 문
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public class Main {
+  public static void main(String[] args) {
+    List<Long> numbers = Arrays.asList(1L, 2L, 3L);
+    
+    for (long number : numbers) { // 콜론(:)을 사용
+      System.out.println(number);
+    }
+  }
+}
+```
+
+</td>
+<td>
+
+```kotlin
+fun main() {
+  val numbers = listOf(1L, 2L, 3L)
+
+  for (number in numbers) { // in을 사용, 
+    println(number)
+  }    
+}
+
+```
+</td>
+</tr>
+
+<tr>
+    <td>
+        1. 자바에서는 컬렉션을 ~ 으로 만든다. <br/>
+        2. 자바에서의 for-each문은 콜론(:)을 사용한다.
+    </td>
+    <td>
+        1. 코틀린에서는 컬렉션을 ~ 으로 만든다. <br/>
+        2. 코틀린에서의 for-each문은 `in`을 사용한다. in 뒤에는 자바와 동일하다. 즉, Iterable이 구현된 타입이라면 모두 들어갈 수 있다.
+</td>
+</tr>
+</table>
+
+### 2. 전통적인 for 문
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public class Main {
+  public static void main(String[] args) {
+    // 숫자가 1씩 증가하는 경우
+    for (int i = 1; i <= 3; i++) {
+      System.out.println(i);
+    }
+    
+    // 숫자가 1씩 감소하는 경우
+    for (int i = 3; i <= 1; i--) {
+      System.out.println(i);
+    }
+
+    // 숫자가 2씩 증가하는 경우
+    for (int i = 1; i <= 5; i += 2) {
+      System.out.println(i);
+    }
+  }
+}
+```
+
+</td>
+<td>
+
+```kotlin
+fun main() {
+  // 숫자가 1씩 증가하는 경우
+  for (i in 1..3) { // 1부터 3까지
+    println(i)
+  }
+  
+  // 숫자가 1씩 감소하는 경우
+  for (i in 3 downTo 1) {
+    println(i)
+  }
+
+  // 숫자가 2씩 증가하는 경우
+  for (i in 1..5 step 2) {
+    println(i)
+  }
+}
+
+```
+</td>
+</tr>
+- downTo, step도 함수다.
+- 코틀린에서 [변수.함수이름(argument)] 대신 [변수 함수이름 argument]로 호출하는 함수를 중위 함수라고 한다.
+
+</table>
+
+
+### 3. Progression과 Range
+#### .. 연산자 -> 등차 수열(시작값, 끝값, 공차)을 만들어주는 연산자
+- 범위를 만들어 내는 연산자
+- 예시) 1..3 (1부터 3의 범위) : 1에서 시작하고 3으로 끝나는 등차수열을 만들어 줘
+
+
+
+### 4. while 문
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public class Main {
+  public static void main(String[] args) {
+    int i = 1;
+    
+    while (i <= 3) {
+      System.out.println(i);
+      i++;
+    }
+  }
+}
+```
+
+</td>
+<td>
+
+```kotlin
+fun main() {
+  var i = 1
+  
+  while (i <= 3) {
+    println(i)
+    i++
+  }
+}
+
+```
+</td>
+</tr>
+<tr>
+- 자바와 코틀린 거의 동일
+</tr>
+</table>
 
 
 
