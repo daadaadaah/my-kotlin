@@ -521,7 +521,324 @@ fun startsWithA1(str: String?): Boolean {
 
 ### 4. 플랫폼 타입
 - 플랫폼 타입 : 코틀린이 null 관련 정보를 알 수 없는 타입으로, 런타임시 Exception이 발생할 수 있다.
--
+- 
+
+
+## Lec 05. 코틀린에서 조건문을 다루는 방법
+### 1. if문
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public class Main {
+    private void validateScoreIsNotNegative(int score) {
+      if (score < 0) {
+        throw new IllegalArgumentException(String.format("%s는 0보다 작을 수 없습니다.", score));
+      }
+    }
+}
+```
+```java
+public class Main {
+  private String getPassOrFail(int score) {
+    if (score >= 50) {
+      return "P";
+    } else {
+      return "F";
+    }
+      
+    // 30 + 40 = 70이라는 하나의 결과가 나온다. (Expression 이면서 Statement)
+    int score = 30 + 40;
+
+    // 컴파일 에러가 발생한다. 왜냐하면, 자바에서는 if 문을 하나의 값으로 취급하지 않기 떄문이다.
+    // 따라서, 자바에서는 if-else가 Statement 이다.
+    String grade = if (score >= 50) {
+      "P";
+    } else {
+      "F";
+    }
+
+    // 단, 3항 연산자는 하나의 값으로 취급하므로, 컴파일 에러가 없다. (Expression 이면서 Statement)
+    String grade = score >= 50 ? "P" : "F";
+    
+    // if - else if -else 문도 문법이 동일하다.
+    private String getGrade(int score) {
+      if (score >= 90) {
+        return "A";
+      } else if (score >= 80) {
+        return "B";
+      } else if (score >= 70) {
+        return "C";
+      } else {
+        return "D";
+      }
+    }
+  }
+}
+```
+</td>
+<td>
+
+```kotlin
+fun validateScoreIsNotNegative(score: Int) { // Unit(void)는 생략 가능
+  if (score < 0) {
+    throw IllegalArgumentException("${score}는 0보다 작을 수 없습니다")
+  }
+}
+```
+
+```kotlin
+fun getPassOrFail1(score: Int): String {
+    if (score >= 50) {
+        return "P"
+    } else {
+        return "F"
+    }
+}
+
+// 코틀린에서는 if-else 문이 Expressions이기 때문에, 하나의 값으로 취급할 수 있다. 따라서, 
+fun getPassOrFail2(score: Int): String {
+  return if (score >= 50) {
+    "P"
+  } else {
+    "F"
+  }
+}
+
+// if - else if - else 문도 문법이 동일하다.
+fun getGrade(score: Int): String {
+  if (score >= 90) {
+    return "A"
+  } else if (score >= 80) {
+    return "B"
+  } else if (score >= 70) {
+    return "C"
+  } else {
+    return "D"
+  }
+}
+
+// 코틀린에서는 return이 가장 앞에 오고 if - else if - else를 쭉 쓸 수 있다.  
+fun getGrade(score: Int): String {
+  return if (score >= 90) {
+    "A"
+  } else if (score >= 80) {
+    "B"
+  } else if (score >= 70) {
+    "C"
+  } else {
+    "D"
+  }
+}
+
+```
+</td>
+</tr>
+
+<tr>
+    <td>
+        - 자바에서는 Exception을 던질 때 new를 사용해서 예외를 던졌습니다. <br/>
+        - 자바에서는 if-else가 `Statement` 이다.
+    </td>
+    <td>
+        - 코틀린에서는 Exception을 던질 때 new를 사용하지 않고 예외를 던졌습니다. <br/>
+        - 코틀린에서는 if-else가 `Expression` 이다. 따라서, 3항 연산자가 없다.
+</td>
+</tr>
+</table>
+
+
+
+### 2. Expression 과 Statement
+- Statement : 프로그램의 문장, 하나의 값으로 도출되지 않는다. <br/>
+- Expression : 하나의 값으로 도출되는 문장 <br/>
+- Expression은 Statement에 포함된다. <br/>
+- 즉, Statement 중에 하나의 값으로 도출되는 문장들이 Expression 이다.
+
+
+> 간단한 Tip <br />
+> 어떠한 값이 특정 범위에 포함되어 있는지, 포함되어 있지 않은지 <br />
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public class Main {
+    private void validateScore(int score) {
+      if(0 <= score && score <= 100) {
+        throw new IllegalArgumentException(String.format("%s는 0 <= score <= 100", score));
+      }
+    }
+}
+```
+
+</td>
+<td>
+
+```kotlin
+fun validateScore(score: Int) {
+  if (score in 0..100) { // 포함되어 있는 경우 : score 값이 0부터 100 사이에 있다면, if 문 실행
+    throw IllegalArgumentException("${score}는 0부터 100 사이에 있습니다.")
+  }
+
+
+  if (score !in 0..100) { // 포함되어 있지 않은 경우 : score 값이 0부터 100 사이에 있지 않으면, if 문 실행
+    throw IllegalArgumentException("${score}는 0부터 100 사이에 있지 않습니다.")
+  }
+}
+```
+</td>
+</tr>
+</table>
+
+
+
+
+### 3. switch 와 when
+```
+when(값) {
+    // 조건부에는 어떠한 expression이라도 들어갈 수 있다. (예 : is Type)
+    조건부 -> 어떠한 구문
+    조건부 -> 어떠한 구문
+    else -> 어떠한 굼누
+}
+```
+- when 역시 Expression이기 때문에, when을 통해서 나온 결과를 바로 return 할 수 있다.
+- 특정한 값이 특정한 값일 때, 분기를 칠 수 있다.
+- 어떠한 범위에 있거나 혹은 다른 기타 조건을 사용해서, 분기를 칠 수 있다.
+
+> when은 Enum Class 혹은 Sealed Class와 함께 사용할 경우, 더욱더 진가를 발휘한다.
+
+> when 예시1 : when 문법의 조건부에는 어떠한 expression이라도 들어갈 수 있다. (예 : is Type)
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public class Main {
+  private boolean startsWithA(Object obj) {
+    if (obj instanceof String) {
+      return (((String) obj).startsWith("A"));
+    } else {
+      return false;
+    }
+  }
+}
+```
+
+</td>
+<td>
+
+```kotlin
+fun startsWithA(obj: Any): Boolean { // 자바의 Object 대신 코틀린에서는 Any가 최상위 타입
+  return when (obj) {
+    is String -> obj.startsWith("A") // 스마트 캐스트
+    else -> false
+  }
+}
+```
+</td>
+</tr>
+</table>
+
+> when 예시 2 : when 문법의 조건문에는 여러 개의 조건을 동시에 검사할 수 있다. (`,`으로 구분)
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public class Main {
+  private void judgeNumber(int number) {
+    if (number == 1 || number == 0 || number == -1) {
+      System.out.println("어디서 많이 본 숫자입니디");
+    } else {
+      System.out.println("1, 0, -1이 아닙니다");
+    }
+  }
+}
+```
+
+</td>
+<td>
+
+```kotlin
+fun judgeNumber(number: Int) {
+  when (number) {
+    1, 0, -1 -> println("어디서 많이 본 숫자입니다")
+    else -> println("1, 0, -1이 아닙니다")
+  }
+}
+```
+</td>
+</tr>
+</table>
+
+> when 예시 3 : when 문법의 값이 없을 수도 있다. - early retrun 처럼 동작
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public class Main {
+  private void judgeNumber2(int number) {
+    if (number == 0) {
+      System.out.println("주어진 숫자는 0입니다");
+      return;
+    }
+
+    if (number % 2 == 0) {
+      System.out.println("주어진 숫자는 짝수입니다");
+      return;
+    }
+
+    System.out.println("주어지는 숫자는 홀수입니다");
+  }
+}
+```
+
+</td>
+<td>
+
+```kotlin
+fun judgeNumber2(number: Int) {
+  when {
+    number == 0 -> println("주어진 숫자는 0입니다")
+    number % 2 == 0 -> println("주어진 숫자는 짝수입니다")
+    else -> println("주어지는 숫자는 홀수입니다")
+  }
+}
+```
+</td>
+</tr>
+</table>
+
+
 
 
 # Reference
