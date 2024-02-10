@@ -1002,6 +1002,230 @@ fun main() {
 </table>
 
 
+## Lec 07. 코틀린에서 예외를 다루는 방법
+### 1. try catch finally 구문
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public class Main {
+  private void judgeNumber2(int number) {
+    if (number == 0) {
+      System.out.println("주어진 숫자는 0입니다");
+      return;
+    }
+
+    if (number % 2 == 0) {
+      System.out.println("주어진 숫자는 짝수입니다");
+      return;
+    }
+
+    System.out.println("주어지는 숫자는 홀수입니다");
+  }
+}
+```
+
+</td>
+<td>
+
+```kotlin
+fun judgeNumber2(number: Int) {
+  when {
+    number == 0 -> println("주어진 숫자는 0입니다")
+    number % 2 == 0 -> println("주어진 숫자는 짝수입니다")
+    else -> println("주어지는 숫자는 홀수입니다")
+  }
+}
+```
+</td>
+</tr>
+</table>
+
+## Lec 06. 코틀린에서 반복문을 다루는 방법
+### 1. for-each 문
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public class Main {
+  private int parseIntOrThrow(@NotNull String str) {
+    try {
+      return Integer.parseInt(str);
+    } catch (NumberFormatException e) {
+      throw new IllegalArgumentException(String.format("주어진 %s는 숫자가 아닙니다", str));
+    }
+  }
+  
+  // 실패하면 Null을 반환해보자.
+  private Integer parseIntOrThrowV2(String str) {
+    try {
+      return Integer.parseInt(str);
+    } catch (NumberFormatException e) {
+      return null;
+    }
+  }
+}
+```
+
+</td>
+<td>
+
+```kotlin
+fun parseIntOrThrow(str: String): Int {
+    try { // try catch finally 구문은 문법적으로 동일하다.
+      return str.toInt() // 기본 타입간의 형변환은 toType()을 사용한다.
+    } catch (e: NumberFormatException) { // 타입이 뒤에 위치한다.
+      throw IllegalArgumentException("주어진 ${str}는 숫자가 아닙니다") // `new`를 사용하지 않았다. 포맷팅이 간결하다.
+    }
+}
+
+// 실패하면 Null을 반환해보자.
+fun parseIntOrThrowV2(str: String): Int? { 
+  try {
+    return str.toInt()
+  } catch (e: NumberFormatException) {
+    return null
+  }
+}
+
+// try catch도 코틀린에서 if문 처럼 하나의 Expression 처럼 간주된다.
+fun parseIntOrThrowV2(str: String): Int? {
+  return try {
+    str.toInt()
+  } catch (e: NumberFormatException) {
+    null
+  }
+}
+
+```
+</td>
+</tr>
+
+<tr>
+    <td>
+        1. 자바에서는 
+    </td>
+    <td>
+        1. 코틀린에서는 try   <br/>
+</td>
+</tr>
+</table>
+
+### 2. Checked Exception과 Unchecked Exception
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public class Main {
+  // 프로젝트 내 파일의 내용물을 읽어오는 예제
+  public void readFile() throws IOException {
+    File currentFile = new File(".");
+    File file = new File(currentFile.getAbsoluteFile() + "/a.txt");
+    BufferedReader reader = new BufferedReader(new FileReader(file));
+    System.out.println(reader.readLine());
+    reader.close();
+  }
+}
+```
+
+</td>
+<td>
+
+```kotlin
+fun readFile() { // throws 구문이 없다. 
+  val currentFile = File(".")
+  val file = File(currentFile.absolutePath + "/a.txt")
+  val reader = BufferedReader(FileReader(file))
+  println(reader.readLine())
+  reader.close()
+}
+```
+</td>
+</tr>
+
+<tr>
+    <td>
+        1. 자바에서는 IOException 같은 Checked Exception 이 발생할 경우, throws 를 해주어야 한다.
+    </td>
+    <td>
+        1. 코틀린에서는 throws 구문이 없다. 
+        - 그 이유는 코틀린에서는 Checked Exception과 Unchecked Exception을 구분하지 않는다. 모두 Unchecked Exception이다.  <br/>
+        - 따라서, IOException 같은 Checked Exception 이 발생해도 throws를 해주지 않는다.
+        - 단, Unckecked Exception으로 간주하는 것 뿐이지, 실제 동작은 자바에서와 동일하다.
+        - 즉, IOException이 발생하면, 트랜잭션 롤백이 안되는 등 내부적으로는 Checked, Unchecked 구분이 필요하다.
+</td>
+</tr>
+</table>
+
+
+
+
+### 3. try with resources
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public class Main {
+  // 프로젝트 내 파일의 내용물을 읽어오는 예제
+  public void readFile(String path) throws IOException {
+    try (BufferedReader reader = new BufferedReader(new FileReader(path))) {
+      System.out.println(reader.readLine());
+    }
+  }
+}
+```
+
+</td>
+<td>
+
+```kotlin
+fun readFile(path: String) {
+  BufferedReader(FileReader(path)).use { reader ->
+    println(reader.readLine())
+  }
+}
+```
+</td>
+</tr>
+
+<tr>
+    <td>
+        1. 자바에서는 
+    </td>
+    <td>
+        1. 코틀린에서는 try with resources 구문이 없고, 대신 use라는 inline 확장함수를 사용한다.
+
+</td>
+</tr>
+</table>
+
+
+
+
 
 # Reference
 - https://gksdudrb922.tistory.com/261
