@@ -523,6 +523,642 @@ fun startsWithA1(str: String?): Boolean {
 - 플랫폼 타입 : 코틀린이 null 관련 정보를 알 수 없는 타입으로, 런타임시 Exception이 발생할 수 있다.
 - 
 
+## Lec 03. 코틀린에서 Type을 다루는 방법
+### 1. 기본 타입
+1. 코틀린에서는 선언된 기본값을 보고 타입을 추론한다.
+```kotlin
+val number1 = 3 // Int
+val number2 = 3L // Long
+val number3 = 3.0f // Float
+val number4 = 3.0 // Double
+```
+
+2. 기본 타입간의 변환
+- 자바에서 기본 타입간의 변환은 `암시적으로` 이루어질 수 있다.
+- int 타입의 값이 long 타입으로 암시적으로 변경되었다. Java에서 더 큰 타입으로는 암시적 변경이 이루어질 수 있다.
+```java
+int number1 = 4;
+long number2 = number1; // 더 큰 타입으로 암시적 변경
+```
+
+- 코틀린에서 기본 타입간의 변환은 to변환타입()을 사용해서 `명시적으로` 이루어져야 한다.
+```kotlin
+val number1 = 3 // Int 로 타입 추론됨.
+val number2: Long = number1 // 컴파일 오류
+val number2: Long = number1.toLong() // 명시적 변환
+```
+
+- 변수가 nullable이라면 적절한 처리가 필요하다.
+```kotlin
+val number1: Int? = 3
+
+val number2: Long = number1.toLong() // 컴파일 에러, number1이 null일 수도 있기 때문에
+
+val number2: Long = number1?.toLong() ?: 0L
+
+```
+
+### 2. 타입 캐스팅
+<img width="440" alt="스크린샷 2024-02-10 오후 8 58 14" src="https://github.com/daadaadaah/my-kotlin/assets/60481383/1163b861-6808-47f9-8c4e-292121afbc3d">
+<img width="609" alt="스크린샷 2024-02-10 오후 8 59 36" src="https://github.com/daadaadaah/my-kotlin/assets/60481383/9d66f59f-9df1-44db-8ba2-e871a7d6f8d6">
+<img width="626" alt="스크린샷 2024-02-10 오후 9 00 16" src="https://github.com/daadaadaah/my-kotlin/assets/60481383/616b48f2-d855-4bef-b511-4bf7f2653bc2">
+
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public class Main {
+  public static void printAgeIfPerson(Object obj) {
+    if (obj instanceof Person) {
+      Person person = (Person) obj;
+      System.out.println(person.getAge());
+    }
+
+    if (obj instanceof Person) {
+      System.out.println(obj.getAge()); // 에러가 남. Cannot resolve method 'getAge' in 'Object'
+    }
+
+    // not 의미 : obj가 Person 타입이 아니라면
+    if (!(obj instanceof Person)) {
+      Person person = (Person) obj;
+      System.out.println(person.getAge());
+    }
+  }
+}
+```
+
+</td>
+<td>
+
+```kotlin
+fun printAgeIfPerson(obj: Any) {
+  if (obj is Person) {
+    val person = obj as Person
+    println(person.age)
+  }
+  
+  // 스마트 캐스트
+  // 한 번 코틀린 컴파일러가 컨텍스트를 분석해가지고
+  if (obj is Person) {
+    println(obj.age)
+  }
+  
+  // not 의미 : obj가 Person 타입이 아니라면
+  if (obj !is Person) {
+    println(obj.age)
+  }
+
+  // 자바처럼 이렇게도 되긴 함.
+  if (!(obj is Person)) {
+    println(obj.age)
+  }
+}
+
+```
+</td>
+</tr>
+<tr>
+<td>
+1. 자바에서는 `instanceof`로 객체의 타입을 판별한다. <br />
+2. 자바에서는 `(Person) obj`으로 타입 캐스팅한다. <br />
+3. 자바에서는 스마트 캐스트 같은 기능을 지원하지 않는다. <br />
+</td>
+<td>
+1. 코틀린에서는 `is`로 객체의 타입을 판별한다. <br />
+2. 코틀린에서는 `obj as Person`으로 타입 캐스팅한다. <br />
+3. 코틀린에서는 if 문에서 타입 체크가 됐다면 따로 타입 캐스팅할 필요 없이 `스마트 캐스트`를 지원한다.
+</td>
+</tr>
+</table>
+
+### 3. 코틀린의 3가지 특이한 타입
+#### 코틀린의 3가지 특이한 타입 1 : Any
+- 자바의 Object 역할. (모든 객체의 최상위 타입)
+- 모든 Primitive 타입의 최상위 타입도 Any이다.
+- Any 자체로는 null을 포함할 수 없어 null을 포함하고 싶다면, Any?로 표현.
+- Any에 equals/hashCode/toString 존재.
+
+#### 코틀린의 3가지 특이한 타입 2 : Unit
+- 자바의 void와 동일한 역할.
+- 자바의 void와 다르게 Unit은 타입 인자로 사용 가능하다. (제네릭에서 void를 쓰려면 Void 타입을 사용해야 한다)
+- 함수형 프로그래밍에서 Unit은 단 하나의 인스턴스만 갖는 타입을 의미. 즉, 코틀린의 Unit은 실제 존재하는 타입이라는 것을 표현
+
+#### 코틀린의 3가지 특이한 타입 3 : Nothing
+- 함수가 정상적으로 끝나지 않았다는 사실을 표현하는 역할.
+- ex) 무조건 예외를 반환하는 함수/무한 루프 함수 등
+- 사실 위와 같은 함수는 잘 작성하지 않기 때문에 Nothing도 거의 사용하지 않게 된다.
+```kotlin
+fun fail(message: String): Nothing {
+    throw IllegalArgumentException(message)
+}
+```
+
+### 4. String Interpolation, String indexing
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public class Main {
+  public static void main(String[] args) {
+    Person person = new Person("한영규", 100);
+    String log = String.format("사람의 이름은 %s이고 나이는 %s세 입니다", person.getName(), person.getAge());
+  }
+}
+```
+```java
+public class Main {
+  public static void main(String[] args) {
+    // 문자열의 특정 문자 가져오기
+    String str = "ABCDE";
+    char ch = str.charAt(1);
+  }
+}
+```
+
+</td>
+<td>
+
+```kotlin
+fun main() {
+  val person = Person("최태현", 100)
+  val log = "사람의 이름은 ${person.name}이고 나이는 ${person.age}세 입니다"
+
+  // $변수를 사용할 수도 있다.
+  // 변수 이름만 사용할 수 있더라도 ${변수}를 사용하는 것이 가독성, 일괄 변환, 정규식 활용 측면에서 좋다.
+  val name = "최태현"
+  val age = 100
+  val log = "사람의 이름: $name 나이: $age
+
+  // 여러 줄에 걸친 문자열을 작성해야 할 때 큰 따옴표 3개(""" """)형식을 사용하면 깔끔하게 코딩하 ㄹ수 있다.
+  val withoutIndent = """
+    ABC
+    123
+    456
+    ${name}
+    $age
+  """.trimIndent() // intellij에서 자동으로 trimIndent()를 추가해준다.
+
+}
+```
+```kotlin
+fun main() {
+  // 문자열의 특정 문자 가져오기
+  val str = "ABCDE"
+  val ch = str[1]
+}
+```
+</td>
+</tr>
+</table>
+
+## Lec 04. 코틀린에서 연산자를 다루는 방법
+### 1. 단항 연산자 / 산술 연산자
+- 자바와 코틀린 완전 동일하다.
+
+### 2. 비교 연산자와 동등성, 동일성
+#### 비교 연산자
+- 자바와 코틀린 사용법이 동일하다.
+- 자바와 다르게, 코틀린에서는 객체를 비교할 때 비교 연산자를 사용하면 자동으로 `compareTo`를 호출해준다.
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public class Main {
+  public static void main(String[] args) {
+    JavaMoney money1 = new JavaMoney(1_000L);
+    JavaMoney money2 = new JavaMoney(2_000L);
+     
+    if (money1.compareTo(money2) > 0) {
+      System.out.println("Money1이 Money2보다 금액이 큽니다");
+    }
+  }
+}
+
+public class JavaMoney implements Comparable<JavaMoney> {
+ 
+  private final long amount;
+ 
+  public JavaMoney(long amount) {
+    this.amount = amount;
+  }
+ 
+  public JavaMoney plus(JavaMoney other) {
+    return new JavaMoney(this.amount + other.amount);
+  }
+ 
+  @Override
+  public int compareTo(@NotNull JavaMoney o) {
+    return Long.compare(this.amount, o.amount);
+  }
+ 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    JavaMoney javaMoney = (JavaMoney) o;
+    return amount == javaMoney.amount;
+  }
+ 
+  @Override
+  public int hashCode() {
+    return Objects.hash(amount);
+  }
+ 
+  @Override
+  public String toString() {
+    return "JavaMoney{" +
+        "amount=" + amount +
+        '}';
+  }
+ 
+}
+```
+
+</td>
+<td>
+
+```kotlin
+fun main() {
+  val money1 = JavaMoney(2_000L)
+  val money2 = JavaMoney(1_000L)
+   
+  if (money1 > money2) { // 코틀린에서는 비교 연산자 상황이 되면, 자동으로 compareTo를 자동으로 호출해준다.
+      println("Money1이 Money2보다 금액이 큽니다")
+  } 
+}
+
+```
+</td>
+</tr>
+</table>
+
+#### 동일성(Idenntity)과 동등성(Equality)
+- 동일성 : 두 객체가 동일한 객체인가? 즉, 주소가 같은가
+- 동등성 : 두 객체의 값이 같은가?
+
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public class Main {
+  public static void main(String[] args) {
+    JavaMoney money1 = new JavaMoney(1_000L);
+    JavaMoney money2 = money1;
+    JavaMoney money3 = new JavaMoney(1_000L);
+    
+    System.out.println(money1 == money2); // true, 동일성
+    System.out.println(money1 == money3); // false
+    System.out.println(money1.equals(money3)); // true, 동등성
+  }
+}
+```
+
+</td>
+<td>
+
+```kotlin
+fun main() {
+  val money1 = JavaMoney(2_000L)
+  val money2 = money1
+  val money3 = JavaMoney(2_000L)
+  
+  println(money1 === money2) // ture, 동일성
+  println(money1 === money3) // false
+  println(money1 == money3) // ture, 동등성 
+}
+
+```
+</td>
+</tr>
+<tr>
+    <td>
+        - 자바에서는 동일성에 ==을 사용하고, 동등성에 equals를 직접 호출 <br/>
+    </td>
+    <td>
+        - 코틀린에서는 동일성에 ===을 사용하고, 동등성에 ==을 호출 -> ==을 사용하면 간접적으로 equals를 호출해준다. <br/>
+</td>
+</tr>
+</table>
+
+### 3. 논리 연산자 / 코틀린에 있는 특이한 연산자
+#### 논리 연산자
+- 자바와 코틀린이 완전히 동일하다.
+- 자바처럼 코틀린에서도 Lazy 연산을 수행한다.
+
+```kotlin
+fun main() {
+    if (fun1() || fun2()) { // fun1()이 true이므로, fun2()을 호출하지 않고 바로 "본문"을 출력한다. -> lazy 연산
+        println("본문")
+    }
+
+    // 결과
+    // fun1
+    // 본문
+
+    if(fun2() && fun1()) { // fun1()이 false이므로, fun1()을 호출하지 않고 바로 "본문"을 출력한다. -> lazy 연산
+        println("본문")
+    }
+
+    // 결과
+    // fun2
+    // 본문
+
+}
+ 
+fun fun1(): Boolean {
+    println("fun1")
+    return true
+}
+ 
+fun fun2(): Boolean {
+    println("fun2")
+    return false
+}
+
+```
+
+#### 코틀린에 있는 특이한 연산자
+1. in / !in
+- 컬렉션이나 범위에 포함되어 있다. 포함되어 있지 않다.
+2. a..b
+- a부터 b까지의 범위 객체를 생성한다.
+3. a[i]
+- a에서 특정 index i로 값을 가져온다.
+```kotlin
+val str = "ABC"
+println(str[2]) // C
+```
+4. a[i] = b
+- a에서 특정 index i에 b를 넣는다.
+
+
+### 4. 연산자 오버로딩
+- 코틀린에서는 객체마다 연산자를 직접 정의할 수 있다.
+```kotlin
+data class Money (
+    val amount: Long
+) {
+    operator fun plus(other: Money): Money {
+        return Money(this.amount + other.amount)
+    }
+}
+
+fun main() {
+    val money1 = Money(2_000L)
+    val money2 = Money(1_000L)
+    println(money1 + money2)
+    
+    // 결과
+    Money(amount=3000)
+}
+```
+
+
+
+
+
+## Lec 04. 코틀린에서 연산자를 다루는 방법
+### 1. 단항 연산자 / 산술 연산자
+- 자바와 코틀린 완전 동일하다.
+
+### 2. 비교 연산자와 동등성, 동일성
+#### 비교 연산자
+- 자바와 코틀린 사용법이 동일하다.
+- 자바와 다르게, 코틀린에서는 객체를 비교할 때 비교 연산자를 사용하면 자동으로 `compareTo`를 호출해준다.
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public class Main {
+  public static void main(String[] args) {
+    JavaMoney money1 = new JavaMoney(1_000L);
+    JavaMoney money2 = new JavaMoney(2_000L);
+     
+    if (money1.compareTo(money2) > 0) {
+      System.out.println("Money1이 Money2보다 금액이 큽니다");
+    }
+  }
+}
+
+public class JavaMoney implements Comparable<JavaMoney> {
+ 
+  private final long amount;
+ 
+  public JavaMoney(long amount) {
+    this.amount = amount;
+  }
+ 
+  public JavaMoney plus(JavaMoney other) {
+    return new JavaMoney(this.amount + other.amount);
+  }
+ 
+  @Override
+  public int compareTo(@NotNull JavaMoney o) {
+    return Long.compare(this.amount, o.amount);
+  }
+ 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    JavaMoney javaMoney = (JavaMoney) o;
+    return amount == javaMoney.amount;
+  }
+ 
+  @Override
+  public int hashCode() {
+    return Objects.hash(amount);
+  }
+ 
+  @Override
+  public String toString() {
+    return "JavaMoney{" +
+        "amount=" + amount +
+        '}';
+  }
+ 
+}
+```
+
+</td>
+<td>
+
+```kotlin
+fun main() {
+  val money1 = JavaMoney(2_000L)
+  val money2 = JavaMoney(1_000L)
+   
+  if (money1 > money2) { // 코틀린에서는 비교 연산자 상황이 되면, 자동으로 compareTo를 자동으로 호출해준다.
+      println("Money1이 Money2보다 금액이 큽니다")
+  } 
+}
+
+```
+</td>
+</tr>
+</table>
+
+#### 동일성(Idenntity)과 동등성(Equality)
+- 동일성 : 두 객체가 동일한 객체인가? 즉, 주소가 같은가
+- 동등성 : 두 객체의 값이 같은가?
+
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public class Main {
+  public static void main(String[] args) {
+    JavaMoney money1 = new JavaMoney(1_000L);
+    JavaMoney money2 = money1;
+    JavaMoney money3 = new JavaMoney(1_000L);
+    
+    System.out.println(money1 == money2); // true, 동일성
+    System.out.println(money1 == money3); // false
+    System.out.println(money1.equals(money3)); // true, 동등성
+  }
+}
+```
+
+</td>
+<td>
+
+```kotlin
+fun main() {
+  val money1 = JavaMoney(2_000L)
+  val money2 = money1
+  val money3 = JavaMoney(2_000L)
+  
+  println(money1 === money2) // ture, 동일성
+  println(money1 === money3) // false
+  println(money1 == money3) // ture, 동등성 
+}
+
+```
+</td>
+</tr>
+<tr>
+    <td>
+        - 자바에서는 동일성에 ==을 사용하고, 동등성에 equals를 직접 호출 <br/>
+    </td>
+    <td>
+        - 코틀린에서는 동일성에 ===을 사용하고, 동등성에 ==을 호출 -> ==을 사용하면 간접적으로 equals를 호출해준다. <br/>
+</td>
+</tr>
+</table>
+
+### 3. 논리 연산자 / 코틀린에 있는 특이한 연산자
+#### 논리 연산자
+- 자바와 코틀린이 완전히 동일하다.
+- 자바처럼 코틀린에서도 Lazy 연산을 수행한다.
+
+```kotlin
+fun main() {
+    if (fun1() || fun2()) { // fun1()이 true이므로, fun2()을 호출하지 않고 바로 "본문"을 출력한다. -> lazy 연산
+        println("본문")
+    }
+
+    // 결과
+    // fun1
+    // 본문
+
+    if(fun2() && fun1()) { // fun1()이 false이므로, fun1()을 호출하지 않고 바로 "본문"을 출력한다. -> lazy 연산
+        println("본문")
+    }
+
+    // 결과
+    // fun2
+    // 본문
+
+}
+ 
+fun fun1(): Boolean {
+    println("fun1")
+    return true
+}
+ 
+fun fun2(): Boolean {
+    println("fun2")
+    return false
+}
+
+```
+
+#### 코틀린에 있는 특이한 연산자
+1. in / !in
+- 컬렉션이나 범위에 포함되어 있다. 포함되어 있지 않다.
+2. a..b
+- a부터 b까지의 범위 객체를 생성한다.
+3. a[i]
+- a에서 특정 index i로 값을 가져온다.
+```kotlin
+val str = "ABC"
+println(str[2]) // C
+```
+4. a[i] = b
+- a에서 특정 index i에 b를 넣는다.
+
+
+### 4. 연산자 오버로딩
+- 코틀린에서는 객체마다 연산자를 직접 정의할 수 있다.
+```kotlin
+data class Money (
+    val amount: Long
+) {
+    operator fun plus(other: Money): Money {
+        return Money(this.amount + other.amount)
+    }
+}
+
+fun main() {
+    val money1 = Money(2_000L)
+    val money2 = Money(1_000L)
+    println(money1 + money2)
+    
+    // 결과
+    Money(amount=3000)
+}
+```
+
+
+
+
+
 
 ## Lec 05. 코틀린에서 조건문을 다루는 방법
 ### 1. if문
@@ -1279,6 +1915,1066 @@ fun printAll(vararg strings: String) { // vararg를 사용한다
 </td>
 </tr>
 </table>
+
+## Lec 09. 코틀린에서 클래스를 다루는 방법
+### 1. 클래스와 프로퍼티
+
+- 프로퍼티 = 필드 + getter + setter
+- 코틀린에서는 필드만 만들면, getter, setter를 자동으로 만들어준다.
+- 코틀린에서 자바 클래스를 가져와 쓸 수 있는데, 그런 자바 클래스에 대해서도 .필드로 getter setter를 사용한다. 
+- 
+#### init
+- 클래스가 초기화되는 시점에 한 번 호출되는 블록이다. 
+- 값을 적절히 만들어주거나 validation 로직을 넣거나 하는 용도로 사용된다.
+- 
+
+### 2. 생성자와 init
+#### 주생성자
+- 주생성자의 특징은 반드시 존재해야 한다.
+- 단, 주생성자에 파라미터가 하나도 없다면 생략 가능
+
+
+
+#### 부생성자
+
+
+- 코틀린에서는 부생성자보다는 default parameter를 권장한다.
+- 즉, 파라미터를 넣어주지 않으면, 기본값을 쓰게 하는 것이다.
+```kotlin
+
+```
+
+
+- 객체를 converting(어떤 객체를 다른 객체로 바꾸는 경우, ex. Ailen -> Person)하는 경우 부생성자를 사용할 수 있지만, 이 경우에는 정적 팩토리 메서드를 추천한다.
+
+
+
+
+
+
+
+#### constructor
+- 생성자 추가할 때 사용하는 키워드
+- 
+
+### 3. 커스텀 getter, setter
+
+
+- 객체의 속성을 나타내는 거라면, custom getter를 사용하고, 그렇지 않다면 함수를 사용한다.
+- Custom getter를 사용하면, 자기 자신을 변형해 줄 수도 있다.
+
+
+- setter 자체를 지양하기 때문에, custom setter도 잘 안쓴다.
+- 
+
+
+
+### 4. backing field
+- 무한루프를 막기 위한 예약어, 자기 자신을 가리킨다.
+- 자기 자신을 가리키는 보이지 않는 field다 라고 해서, backing field라고 부른다.
+- 강사의 개인적 경험상 custom getter에서 backing field를 쓰는 경우는 드물었다.
+- 
+
+
+### 요약
+- 코틀린에서는 필드를 만들면 getter와 (필요에 따라) setter가 자동으로 생긴다. 때문에 이를 프로퍼티라고 부른다.
+- 코틀린에서는 주생성자가 필수이다.
+- 코틀린에서는 constructor 키워드를 사용해 부생성자를 추가로 만들 수 있다.
+- 단, default parameter나 정적 팩토리 메소드를 추천한다.
+- 실제 메모리에 존재하는 것과 무관하게 custom getter와 custom setter를 만들 수 있다.
+- custom getter, custom setter에서 무한루프를 막기 위해 `field`라는 키워드를 사용한다. 이를 `backing field`라고 부른다.
+
+
+## Lec 10. 코틀린에서 상속을 다루는 방법
+### 1. 추상 클래스
+- 자바와 코틀린 모두 추상클래스는 인스턴스화할 수 없다.
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public abstract class JavaAnimal {
+
+  protected final String species;
+  protected final int legCount;
+
+  public JavaAnimal(String species, int legCount) {
+    this.species = species;
+    this.legCount = legCount;
+  }
+
+  abstract public void move();
+
+  public String getSpecies() {
+    return species;
+  }
+
+  public int getLegCount() {
+    return legCount;
+  }
+
+}
+```
+- Cat
+
+```java
+public class JavaCat extends JavaAnimal {
+ 
+  public JavaCat(String species) {
+    super(species, 4);
+  }
+ 
+  @Override
+  public void move() {
+    System.out.println("고양이가 사뿐 사뿐 걸어가~");
+  }
+ 
+}
+```
+- Penguin
+```java
+public final class JavaPenguin extends JavaAnimal {
+
+  private final int wingCount;
+
+  public JavaPenguin(String species) {
+    super(species, 2);
+    this.wingCount = 2;
+  }
+
+  @Override
+  public void move() {
+    System.out.println("펭귄이 움직입니다~ 꿱꿱");
+  }
+
+  @Override
+  public int getLegCount() {
+    return super.legCount + this.wingCount;
+  }
+
+}
+```
+
+</td>
+<td>
+
+```kotlin
+abstract class Animal(
+    protected val species: String,
+    protected open val legCount: Int, // 프로퍼티를 override 할 때, 추상 프로퍼티가 아니라면 상속 받을 때 무조건 Open을 붙여줘야만 한다.
+) {
+    abstract fun move()
+}
+```
+- Cat
+```kotlin
+class Cat(
+    species: String,
+) : Animal(species, 4) { // 상위 클래스의 생성자를 바로 호출한다
+    
+    override fun move() { // override를 필수적으로 붙여 주어야 한다
+        println("고양이가 사뿐 사뿐 걸어가~")
+    }
+}
+```
+- Penguin
+```kotlin
+class Penguin(
+    species: String,
+) : Animal(species, 2) {
+ 
+    private val wingCount: Int = 2
+ 
+    override fun move() {
+        println("펭귄이 움직인다~ 꽥꽥")
+    }
+ 
+    override val legCount: Int
+        get() = super.legCount + this. wingCount
+ 
+}
+```
+
+
+
+</td>
+</tr>
+
+<tr>
+    <td>
+        1. 자바에서는 
+    </td>
+    <td>
+        1. 코틀린에서는 
+
+</td>
+</tr>
+</table>
+
+
+### 2. 인터페이스
+- 자바, 코틀린 모두 인터페이스를 인스턴스화 할 수 없다.
+
+
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public interface JavaFlyable {
+
+  default void act() {
+    System.out.println("파닥 파닥");
+  }
+  
+  // 인터페이스에 추상 메서드도 넣을 수 있다.
+  void fly();
+}
+```
+
+```java
+public interface JavaSwimable {
+
+  default void act() {
+    System.out.println("어푸 어푸");
+  }
+}
+```
+
+```java
+public final class JavaPenguin extends JavaAnimal implements JavaSwimable, JavaFlyable {
+ 
+  // ...
+  @Override
+  public void act() {
+    JavaSwimable.super.act();
+    JavaFlyable.super.act();
+  }
+ 
+}
+```
+</td>
+<td>
+
+```kotlin
+interface Flyable {
+  fun act() { // 코틀린은 default 키워드 없이 기본 메서드 구현이 가능하다.
+    println("파닥 파닥")
+  }
+  
+  // 디폴트 메소드 구현시, default 키워드 없이 가능하다.
+  fun fly()
+  
+}
+```
+
+```kotlin
+interface Swimable {
+    
+  // 코틀린에서는 backing field 가 없는 프로퍼티를 interface에 만들 수 있다.
+  val swimAbility: Int
+//    get() = 3 : 인터페이스에서 값을 넣어줘도 됨. 
+    
+  fun act() {
+    println(swimAbility)
+
+    println("어푸 어푸")
+  }
+}
+```
+
+```kotlin
+class Penguin(
+    species: String,
+) : Animal(species, 2), Swimable, Flyable { // 인터페이스 구현도 콜론(:)을 사용한다.
+ 
+    // ...
+ 
+    override fun act() {
+        super<Swimable>.act() // 중복되는 인터페이스를 특정할 때 super<타입>.함수 사용
+        super<Flyable>.act()
+    }
+  
+  override val swimAbility: Int
+    get() = 3
+ 
+}
+```
+
+
+</td>
+</tr>
+
+<tr>
+    <td>
+        1. 자바에서는 
+    </td>
+    <td>
+        1. 코틀린에서는 
+
+</td>
+</tr>
+</table>
+
+
+
+
+### 3. 클래스를 상속할 때 주의할 점
+```kotlin
+// 부모 클래스의 추상 프로퍼티가 아닌 프로퍼티에는 open을, 자식 클래스에는 해당 프로퍼티에 override를 붙여야 한다.
+open class Base( // Base 클래스를 다른 클래스가 상속받을 수 있게 open으로 열어줌
+    open val number: Int = 100, // number 라는 프로퍼티를 누군가가 override 할 수 있게끔 open으로 열어줌
+) {
+    init {
+        println("Base Class")
+        println(number)
+    }
+}
+```
+
+```kotlin
+class Derived(
+    override val number: Int,
+) : Base(number) {
+    init {
+        println("Derived Class")
+    }
+}
+```
+
+- 상위 클래스를 설계할 때, 생성자 또는 초기화 블록에 사용되는 프로퍼티에는 open을 피해야 한다.
+```kotlin
+fun main() {
+    Derived(300) // Derived() 생성자를 호출하면 어떤 값이 찍힐까?
+}
+
+// 결과
+// Base Class
+// 0
+// Derived Class
+
+// 과정
+// 1. Derieved()에서 Base() 호출
+// 2. Base()의 초기화 블록에서 "Base Class" 출력
+// 3. Base()의 초기화 블록에서 number 출력
+// 4. 이 때 number는 Derived의 number인데 아직 Derived의 초기화 블록이 실행되지 않았기 때문에 Int 기본값인 0을 출력한다.
+// 5. Derieved()의 초기화ㅣ 블록에서 "Derived Class" 출력
+
+// 해당 결과는 number가 Derieved()인자인 300도 아닌, 부모 클래스의 기본값인 100도 아닌 0이 찍히므로, 의도한대로 동작하지 않았을 확률이 높다.
+// 따라서, 상위 클래스를 설계할 때 생성자 또는 초기화 블록에 사용되는 프로퍼티는 open을 피해야 한다.
+// 왜냐하면, 부모 클래스에서 open으로 특정 필드를 열어 놓으면 자식 클래스에서 override할 가능성을 열어 놓는 것이고, 해당 open 프로퍼티를 부모의 초기화 블럭에서 사용하게 되면 위 예시처럼 부모의 초기화 블록에서 자식의 프로퍼티를 사용함으로써 정상적으로 동작하지 않을 수 있다.
+// 즉, 부모의 초기화 블록에서 사용할 프로퍼티는 open을 피함으로써, 자식이 상속받는 것을 방지해 의도한 대로 동작할 것을 기대할 수 있다.
+
+
+
+```
+
+### 4. 상속 관련 지시어 정리
+#### 1. final 
+- override를 할 수 없게 한다. 라는 의미
+- default로 보이지 않게 존재한다.
+
+#### 2. open
+- override를 열어준다. 라는 의미
+
+#### 3. abstract
+- 반드시 override 해야 한다. 라는 의미
+
+#### 4. override
+- 상위 타입을 오버라이드 하고 있다. 라는 의미
+
+
+### 요약
+- 상속 또는 구현을 할 때에 : 를 사용해야 한다.
+- 상위 클래스 상속을 구현할 때 생성자를 반드시 호출해야 한다. 
+- override를 필수로 붙여야 한다. 
+- 추상 멤버가 아니면 기본적으로 오버라이드가 불가능하다.
+  - open을 사용해야 한다.
+- 상위 클래스의 생성자 또는 초기화 블록에서 open 프로퍼티를 사용하면 얘기치 못한 버그가 생길 수 있다.
+
+
+## Lec 11. 코틀린에서 접근 제어를 다루는 방법
+### 1. 자바와 코틀린의 가시성 제어 
+<img width="643" alt="스크린샷 2024-02-17 오후 8 47 22" src="https://github.com/daadaadaah/my-java/assets/60481383/038f6eb1-0d29-4354-acab-d552c2564781">
+
+- 코틀린에서는 패키지를 namespace를 관리하기 위한 용도로만 사용하고, 가시성 제어에는 사용되지 않는다.
+- 자바의 기본 접근 지시어는 `default`, 코틀린의 기본 접근 지시어는 `public` 이다.
+- 코트린은 .kt 파일에 변수, 함수, 클래스 여러개를 바로 만들 수 있다.
+
+
+### 2. 코틀린 파일의 접근 제어
+<img width="275" alt="스크린샷 2024-02-17 오후 8 53 41" src="https://github.com/daadaadaah/my-java/assets/60481383/4fb9df90-b411-4b21-8909-cf8ec38f4b5c">
+- protected 사용 불가능한 이유는 protected가 코틀린에서는 선정된 클래스와 하위 클래스에 작동하는 지시어인데, 클래스가 아니라 파일이므로,
+
+
+### 3. 다양한 구성요소(클래스, 생성자, 프로퍼티)의 접근 제어
+#### (1) 클래스
+- 클래스 안의 멤버
+![스크린샷 2024-02-17 오후 9.46.03.png](..%2F..%2F..%2F..%2F..%2Fvar%2Ffolders%2F4k%2Fr1d7r9ps1k9gnxnmj02gfhym0000gn%2FT%2FTemporaryItems%2FNSIRD_screencaptureui_ZBLTNM%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202024-02-17%20%EC%98%A4%ED%9B%84%209.46.03.png)
+
+#### (2) 생성자
+- 생성자도 가시성 범위는 멤버와 동일하다.
+- 단, 생성자에 접근 지시어를 붙이려면, constructor를 써줘야 한다.
+```kotlin
+class Cat internal constructor(
+)
+```
+
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public abstract class StringUtils {
+ 
+  private StringUtils() {}
+ 
+  public boolean isDirectoryPath(String path) {
+    return path.endsWith("/");
+  }
+}
+```
+
+</td>
+<td>
+
+```kotlin
+// StringUtil.kt
+fun isDirectoryPath(path: String): Boolean {
+  return path.endsWith("/")
+}
+```
+</td>
+</tr>
+
+<tr>
+    <td>
+        1. 자바에서는 유틸성 코드를 만들 때, abstract class + private contructor를 사용해서 인스턴스화를 막을 때가 있다.
+    </td>
+    <td>
+        1. 코틀린에서는 코틀린도 비슷하게 가능하지만, 그냥 파일 최상단에 바로 유틸함수를 작성하면 편하다.
+</td>
+</tr>
+</table>
+
+
+
+
+#### (3) 프로퍼티
+- 프로퍼티도 가시성 범위는 동일하다.
+- 단, 프로퍼티의 가시성을 제어하는 방법으로는 2가지가 있다.
+```kotlin
+class Car(
+    // 방법 1. getter, setter 한 번에 접근 지시어를 정하거나
+    internal val name: String, // name에 대한 getter를 internal로 만들고 싶을 때
+    var owner: String, // owner에 대한 getter와 setter를 private로 만들고 싶을 때
+    _price: Int
+) {
+    var price = _price
+        private set // 방법 2. getter 혹은 setter에만 추가로 가시성을 부여할 수 있다.
+}
+```
+
+
+### 4. 자바와 코틀린을 함께 사용할 경우 주의할 점
+1. Internal은 바이트 코드상 public이 된다. 따라서, 자바 코드에서는 코틀린 모듈의 internal 코드를 가져올 수 있다.
+2. 자바의 protected와 코틀린에서의 protected는 다르다. 자바에서 코틀린 코드를 가져다 쓸 때, 같은 패키지의 코틀린 protected 멤버에 접근할 수 있다.
+- 즉, 코틀린의 internal과 protected는 코틀린 내에서만 유효하다
+
+### 요약
+- Kotlin에서 패키지는 namespace 관리용이기 때문에 protected의 의미가 달라졌다.
+- Kotlin에서는 default의 의미가 사라지고, 모듈간의 접근을 통제하는 internal이 새로 생겼다.
+- 생성자에 접근 지시어를 붙일 때는 constructor를 명시적으로 써주어야 한다.
+- 유틸성 함수를 만들 떄는 파일 최상단을 이용하면 편리하다.
+- 프로퍼티의 custom setter에 접근 지시어를 붙일 수 있다.
+- Java에서 Kotlin 코드를 사용할 때 internal과 protected는 주의해야 한다.
+
+
+## Lec 12. 코틀린에서 object 키워드를 다루는 방법
+### object 키워드가 사용되는 경우 1. static 함수와 변수
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public class JavaPerson {
+
+  private static final int MIN_AGE = 1;
+
+  public static JavaPerson newBaby(String name) {
+    return new JavaPerson(name, MIN_AGE);
+  }
+
+  private String name;
+
+  private int age;
+
+  private JavaPerson(String name, int age) {
+    this.name = name;
+    this.age = age;
+  }
+
+}
+```
+
+</td>
+<td>
+
+```kotlin
+class Person private constructor(
+  private val name: String,
+  private val age: Int,
+) {
+  companion object {
+    private const val MIN_AGE = 1
+
+    fun newBaby(name: String): Person {
+      return Person(name, MIN_AGE)
+    }
+  }
+}
+```
+</td>
+</tr>
+
+<tr>
+    <td>
+        1. 자바에서는 유틸성 코드를 만들 때, abstract class + private contructor를 사용해서 인스턴스화를 막을 때가 있다.
+    </td>
+    <td>
+        1. 코틀린에는 static이라는 키워드 자체가 없고, 대신에 companion object 블록 안에 넣어둔 변수와 함수가 자바의 static 변수와 함수인 것처럼 사용된다. 
+</td>
+</tr>
+</table>
+
+#### static :
+
+
+#### companion object
+- 클래스와 동행하는 유일한 오브젝트
+- companion object, 즉 동반 객체도 하나의 객체로 간주된다.
+- 때문에 이름을 붙일 수 있고, interface를 구현할 수도 있다.
+```kotlin
+interface Log {
+    fun log()
+}
+```
+
+```kotlin
+class Person private constructor(
+  private val name: String,
+  private val age: Int,
+) { 
+    // Factory라는 이름을 붙이고, Log라는 인터페이스를 구현했다.
+  companion object Factory : Log {
+    private const val MIN_AGE = 1
+
+    fun newBaby(name: String): Person {
+      return Person(name, MIN_AGE)
+    }
+
+    override fun log() {
+      println("LOG")
+    }
+  }
+}
+```
+- companion object에 유틸성 함수들을 넣어도 되지만, 최상단 파일을 활용하는 것을 추천한다.
+
+
+> 자바에서 코틀린에 있는 static field나 static 함수를 사용하고 싶을 때
+#### 방법 1. 이름이 없으면 기본적으로 Companion을 사용한다
+```kotlin
+class Person private constructor(
+    private val name: String,
+    private val age: Int,
+) {
+    companion object { // companion object에 이름이 없을 때
+        private const val MIN_AGE = 1
+ 
+        fun newBaby(name: String): Person {
+            return Person(name, MIN_AGE)
+        }
+    }
+}
+```
+```java
+// 자바에서 사용시
+Person.Companion.newBaby("ABC");
+```
+
+#### 방법 2. 만약 companion object 이름이 있으면, 이름을 사용하면 된다.
+```kotlin
+class Person private constructor(
+  private val name: String,
+  private val age: Int,
+) { 
+  companion object Factory {
+    private const val MIN_AGE = 1
+
+    fun newBaby(name: String): Person {
+      return Person(name, MIN_AGE)
+    }
+  }
+}
+```
+```java
+// 자바에서 사용시 
+Person.Factory.newBaby("ABC");
+```
+
+#### 방법 3. 코틀린 코드에 @JvmStatic 붙이기
+```kotlin
+class Person private constructor(
+    private val name: String,
+    private val age: Int,
+) {
+    companion object {
+        private const val MIN_AGE = 1
+ 
+        @JvmStatic // 추가
+        fun newBaby(name: String): Person {
+            return Person(name, MIN_AGE)
+        }
+    }
+}
+```
+```java
+// 자바에서 사용시, 자바의 static field나 static 함수를 쓰는 것처럼 사용할 수 있다.
+Person.newBaby("ABC");
+```
+
+#### const
+- `val` 이라고 선언된 변수는 원래 런타임시에 변수가 할당되는데, `const`를 붙이게 되면, 컴파일 시에 변수가 할당된다.
+- 진짜 상수에 붙이기 위한 용도로, 기본 타입과 String에 붙일 수 있음
+
+
+### object 키워드가 사용되는 경우 2. 싱글톤
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public class JavaSingleton {
+
+  private static final JavaSingleton INSTANCE = new JavaSingleton();
+
+  private JavaSingleton() { }
+
+  public static JavaSingleton getInstance() {
+    return INSTANCE;
+  }
+
+}
+```
+
+</td>
+<td>
+
+```kotlin
+object Singleton
+
+// 예시
+object Singleton {
+  var a: Int = 0
+}
+
+fun main() {
+  println(Singleton.a) // 결과 : 0
+  Singleton.a = 10
+  println(Singleton.a) // 결과 : 10
+}
+
+```
+</td>
+</tr>
+
+<tr>
+    <td>
+        1. 자바에서는 유틸성 코드를 만들 때, abstract class + private contructor를 사용해서 인스턴스화를 막을 때가 있다.
+    </td>
+    <td>
+        1. 코틀린에는 static이라는 키워드 자체가 없고, 대신에 companion object 블록 안에 넣어둔 변수와 함수가 자바의 static 변수와 함수인 것처럼 사용된다. 
+</td>
+</tr>
+</table>
+
+### object 키워드가 사용되는 경우 3. 익명 클래스
+- 익명 클래스 : 특정 인터페이스나 클래스를 상속받은 구현체를 1회성으로 사용할 때 쓰는 클래스
+
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public interface Movable {
+  void move();
+  void fly();
+}
+```
+
+```java
+public static void main(String[] args) {
+  moveSomething(new Movable() {
+    @Override
+    public void move() {
+      System.out.println("움직인다~~");
+    }
+ 
+    @Override
+    public void fly() {
+	  System.out.println("난다~~");
+    }
+  });
+}
+ 
+private static void moveSomething(Movable movable) {
+  movable.move();
+  movable.fly();
+}
+```
+
+
+
+</td>
+<td>
+
+```java
+// 자바
+public interface Movable {
+  void move();
+  void fly();
+}
+```
+```kotlin
+fun main() {
+  moveSomething(object : Movable {
+    override fun move() {
+      println("움직인다")
+    }
+
+    override fun fly() {
+      println("난다~~")
+    }
+
+  })
+}
+
+private fun moveSomething(movable: Movable) {
+  movable.move()
+  movable.fly()
+}
+```
+</td>
+</tr>
+
+<tr>
+    <td>
+        1. 자바에서는 `new 타입이름()` 
+    </td>
+    <td>
+        1. 코틀린에는 `object: 타입이름`
+</td>
+</tr>
+</table>
+
+### 요약
+- Java의 static 변수와 함수를 만드려면, Kotlin에서는 companion object를 사용해야 한다.
+- companion object도 하나의 객체로 간주되기 때문에 이름을 붙일 수 있고, 다른 타입을 상속받을 수도 있다.
+- Kotlin에서 싱글톤 클래스를 만들 때 object 키워드를 사용한다.
+- Kotlin에서 익명 클래스를 만들 때 object : 타입을 사용한다.
+
+
+## Lec 13. 코틀린에서 중첩 클래스를 다루는 방법
+> 서버 개발을 진행하면서 클래스 안에 클래스를 중첩해서 쓸 일이 별로 없다.
+> 어떤 클래스간의 계층 관계를 나타내거나 논리적인 구조를 표현할 때 간혹 사용된다.
+
+
+### 1. 중첩 클래스의 종류
+- 중첩 클래스는 크게 2가지 종류가 있다
+1. static을 사용하는 클래스
+2. static을 사용하지 않는 클래스
+   1) 내부 클래스(Inner Class)
+
+   2) 지역 클래스(Local Class) 
+   - 메소드 내부에 클래스를 정의한 것
+
+   3) 익명 클래스(Anonymous Class)
+
+
+### 2. 코틀린의 중첩 클래스와 내부 클래스
+![스크린샷 2024-02-19 오후 3.06.59.png](..%2F..%2F..%2F..%2F..%2Fvar%2Ffolders%2F4k%2Fr1d7r9ps1k9gnxnmj02gfhym0000gn%2FT%2FTemporaryItems%2FNSIRD_screencaptureui_QaDJvO%2F%EC%8A%A4%ED%81%AC%EB%A6%B0%EC%83%B7%202024-02-19%20%EC%98%A4%ED%9B%84%203.06.59.png)
+
+> 코틀린에서는 이러한 가이드를 충실히 따르고 있다. 
+> 의미 : 기본적으로 바깥 클래스를 참조하지 않는다. 만약, 바깥 클래스를 참조하고 싶다면, inner 키워드를 추가한다.
+
+#### (1) 권장되는 중첩 클래스
+```kotlin
+class House(
+    private var address: String,
+    private var livingRoom: LivingRoom = LivingRoom(10.0)
+) {
+    class LivingRoom(
+        private var area: Double,
+    )
+}
+```
+- 코틀린은 기본적으로 바깥 클래스에 대한 연결이 없는 중첩 클래스가 만들어진다.
+
+
+#### (2) 권장되지 않는 중첩 클래스
+```kotlin
+class House(
+    private var address: String,
+) {
+    private var livingRoom: LivingRoom = this.LivingRoom(10.0)
+    
+    inner class LivingRoom( // 중첩 클래스에서 바깥 클래스를 참조하고 싶다면, 중첩 클래스에 inner 키워드를 붙이면 된다.
+      private var area: Double,
+    ) {
+        val address: String
+            get() = this@House.address //  이 때, 자바와 다른 점은 바깥 클래스 참조를 위해 "this@바깥클래스"를 사용한다.
+    }
+}
+```
+### 요약
+- 클래스 안에 클래스가 있는 경우 종류는 2가지였다.
+  1. (Java 기준) static을 사용하는 클래스
+  2. (Java 기준) static을 사용하지 않는 클래스
+- 권장되는 클래스는 static을 사용하는 클래스이다.
+- 코틀린에서는 이러한 가이드를 따르기 위해
+  - 클래스 안에 기본 클래스를 사용하면 바깥 클래스에 대한 참조가 없고
+  - 바깥 클래스를 참조하고 싶다면, inner 키워드를 붙여야 한다.
+- 코틀린 inner class에서 바깥 클래스를 참조하려면 `this@바깥클래스`를 사용해야 한다.
+
+
+
+## Lec 14. 코틀린에서 다양한 클래스를 다루는 방법
+### 1. Data Class
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public class JavaPersonDto {
+
+  private final String name;
+  private final int age;
+
+  public JavaPersonDto(String name, int age) {
+    this.name = name;
+    this.age = age;
+  }
+
+  public String getName() {
+    return name;
+  }
+
+  public int getAge() {
+    return age;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    JavaPersonDto that = (JavaPersonDto) o;
+    return age == that.age && Objects.equals(name, that.name);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(name, age);
+  }
+
+  @Override
+  public String toString() {
+    return "JavaPersonDto{" +
+            "name='" + name + '\'' +
+            ", age=" + age +
+            '}';
+  }
+}
+```
+
+</td>
+<td>
+
+```kotlin
+data class PersonDto(
+  val name: String,
+  val age: Int,
+)
+```
+</td>
+</tr>
+
+<tr>
+    <td>
+        1. 자바에서는 필드, 생성자, getter, equals, hashCode, toString을 정의한다. IDE를 활용할 수도 있고, lombok을 활용할 수도 있지만, 클래스가 장황해지거나, 클래스 생성 이후 추가적인 처리를 해줘야 하는 단점이 있다. 자바에서는 JDK 16부터 코틀린의 data class 같은 record class를 도입했다.
+    </td>
+    <td>
+        1. 코틀린에는 class 앞에 data 키워드를 붙여주면 eqauls, hashCode, toString을 자동으로 만들어준다. 여기에 named argument까지 활용하면, builder pattern을 쓰는 것 같은 효과도 있다.
+  </td>
+</tr>
+</table>
+
+
+### 2. Enum Class
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public enum JavaCountry {
+
+  KOREA("KO"),
+  AMERICA("US"),
+  ;
+
+  private final String code;
+
+  JavaCountry(String code) {
+    this.code = code;
+  }
+
+  public String getCode() {
+    return code;
+  }
+
+}
+```
+
+</td>
+<td>
+
+```kotlin
+enum class Country(
+  private val code: String,
+) {
+  KOREA("ko"),
+  AMERICA("US"),
+  ;
+}
+```
+</td>
+</tr>
+
+<tr>
+    <td>
+        1. 자바에서는 추가적인 클래스를 상속받을 수 없다. 인터페이스는 구현할 수 있으며, 각 코드가 싱글톤이다.
+    </td>
+    <td>
+        1. 코틀린에서는 
+  </td>
+</tr>
+</table>
+
+> when을 enum class, sealed class와 함께 사용할 경우 더욱 진가를 발휘한다.
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+private static void handleCountry(JavaCountry country) {
+    if (country == JavaCountry.KOREA) {
+      // 로직 처리
+    }
+ 
+    if (country == JavaCountry.AMERICA) {
+      // 로직 처리
+    }
+}
+```
+
+
+</td>
+<td>
+
+```kotlin
+fun handleCountry(country: Country) {
+  when (country) {
+    Country.KOREA -> TODO()
+    Country.AMERICA -> TODO()
+  }
+}
+```
+</td>
+</tr>
+
+<tr>
+    <td>
+        1. 코드가 많아지면 else 로직 처리 등 복잡도가 증가한다.
+    </td>
+    <td>
+        1. 코틀린에서는 코틀린의 when을 사용하면 조금 더 읽기 쉬운 코드가 만들어진다. 또한, 컴파일러가 country의 모든 타입을 알고 있어서 else 로직을 작성하지 않아도 된다. 또한, Enum에 변화가 있으면 IDE 단에서 warning을 주는 식으로 알려준다.
+    </td>
+</tr>
+</table>
+
+
+### 3. Sealed Class, Sealed Interface
+- 상속이 가능하도록 추상클래스로 만들까 하는데, 외부에서는 이 클래스를 상속받지 않았으면 좋겠어. 하위 클래스를 봉인하자 라는 의미에서 sealed class가 나왔다.
+- sealed class의 이론적 특징은 다음과 같다.
+  1. 컴파일 타임 때 하위 클래스의 타입을 모두 기억한다. 즉, 런타임때 클래스 타입이 추가될 수 없다. -> Enum과 같은 특성
+  2. 하위 클래스는 sealed class와 같은 패키지에 있어야 한다.
+- Enum과 다른 점은 다음과 같다. 
+  1. 클래스를 상속받을 수 없는 Enum과 달리, 클래스를 상속받을 수 있다.
+  2. 코드 하나하나가 싱글톤으로 단일 인스턴스를 가지고 있었던 Enum과 달리, 하위 클래스는 멀티 인스턴스가 가능하다.
+
+> 추상화가 필요한 Entity 또는 DTO에 sealed class를 활용함
+> 추가로, JDK 17에서도 Sealed class가 추가되었음 (단, 문법이 좀 다르다.)
+
+
+### 요약
+- Kotlin의 Data class를 사용하면 equals, hashCode, toString을 자동으로 만들어준다.
+- Kotlin의 Enum Class는 Java의 Enum Class와 동일하지만, when과 함께 사용함으로써 큰 장점을 갖게 된다.
+- Enum Class보다 유연하지만, 하위 클래스를 제한하는 Sealed Class 역시 when과 함께 주로 사용된다.
 
 
 
