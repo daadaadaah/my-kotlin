@@ -1224,6 +1224,61 @@ fun readFile(path: String) {
 </table>
 
 
+## Lec 08. 코틀린에서 함수를 다루는 방법
+### 1. 함수 선언 문법
+
+### 2. default parameter
+
+### 3. named argument(parameter)
+- builder를 직접 만들지 않고 builder의 장점처럼 명시적으로 매개변수의 이름을 기재해줘서 코드 이해를 높혀준다. 
+- 단, 코틀린에서 자바 함수를 가져다 사용할 때는 named argument를 사용할 수 없다.
+- 왜냐하면, 코틀린에서 자바코드를 쓸 때, JVM 상에서 Java가 바이트 코드로 변환됐을 때 parameter 이름을 보존하고 있지 않기 때문이다.
+
+### 4. 같은 타입의 여러 파라미터 받기 (가변인자)
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public static void main(String[] args) {
+  // 배열을 직접 넣거나, comma를 이용해 여러 파라미터를 넣는다
+  String[] array = new String[]{"A", "B", "C"};
+  printAll(array);
+  printAll("A", "B", "C");
+}
+ 
+public static void printAll(String... strings) { // 타입 뒤에 (...)를 붙여준다. 
+  for (String str : strings) {
+    System.out.println(str);
+  }
+}
+```
+
+</td>
+<td>
+
+```kotlin
+fun main() {
+    val array = arrayOf("A", "B", "C")
+    printAll(*array) // 배열을 바로 넣는대신 스프레드 연산자(*)를 붙여주어야 한다
+
+    printAll("A", "B", "C")
+}
+
+fun printAll(vararg strings: String) { // vararg를 사용한다
+    for (str in strings) {
+        println(str)
+    }
+}
+```
+</td>
+</tr>
+</table>
 
 
 
