@@ -563,6 +563,224 @@ val number2: Long = number1?.toLong() ?: 0L
 <img width="609" alt="스크린샷 2024-02-10 오후 8 59 36" src="https://github.com/daadaadaah/my-kotlin/assets/60481383/9d66f59f-9df1-44db-8ba2-e871a7d6f8d6">
 <img width="626" alt="스크린샷 2024-02-10 오후 9 00 16" src="https://github.com/daadaadaah/my-kotlin/assets/60481383/616b48f2-d855-4bef-b511-4bf7f2653bc2">
 
+  
+## Lec 04. 코틀린에서 연산자를 다루는 방법
+### 1. 단항 연산자 / 산술 연산자
+- 자바와 코틀린 완전 동일하다.
+
+### 2. 비교 연산자와 동등성, 동일성
+#### 비교 연산자
+- 자바와 코틀린 사용법이 동일하다.
+- 자바와 다르게, 코틀린에서는 객체를 비교할 때 비교 연산자를 사용하면 자동으로 `compareTo`를 호출해준다.
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public class Main {
+  public static void main(String[] args) {
+    JavaMoney money1 = new JavaMoney(1_000L);
+    JavaMoney money2 = new JavaMoney(2_000L);
+     
+    if (money1.compareTo(money2) > 0) {
+      System.out.println("Money1이 Money2보다 금액이 큽니다");
+    }
+  }
+}
+
+public class JavaMoney implements Comparable<JavaMoney> {
+ 
+  private final long amount;
+ 
+  public JavaMoney(long amount) {
+    this.amount = amount;
+  }
+ 
+  public JavaMoney plus(JavaMoney other) {
+    return new JavaMoney(this.amount + other.amount);
+  }
+ 
+  @Override
+  public int compareTo(@NotNull JavaMoney o) {
+    return Long.compare(this.amount, o.amount);
+  }
+ 
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) return true;
+    if (o == null || getClass() != o.getClass()) return false;
+    JavaMoney javaMoney = (JavaMoney) o;
+    return amount == javaMoney.amount;
+  }
+ 
+  @Override
+  public int hashCode() {
+    return Objects.hash(amount);
+  }
+ 
+  @Override
+  public String toString() {
+    return "JavaMoney{" +
+        "amount=" + amount +
+        '}';
+  }
+ 
+}
+```
+
+</td>
+<td>
+
+```kotlin
+fun main() {
+  val money1 = JavaMoney(2_000L)
+  val money2 = JavaMoney(1_000L)
+   
+  if (money1 > money2) { // 코틀린에서는 비교 연산자 상황이 되면, 자동으로 compareTo를 자동으로 호출해준다.
+      println("Money1이 Money2보다 금액이 큽니다")
+  } 
+}
+
+```
+</td>
+</tr>
+</table>
+
+#### 동일성(Idenntity)과 동등성(Equality)
+- 동일성 : 두 객체가 동일한 객체인가? 즉, 주소가 같은가
+- 동등성 : 두 객체의 값이 같은가?
+
+<table>
+<tr>
+  <td>Java</td>
+  <td>kotlin</td>
+</tr>
+
+<tr>
+<td>
+
+```java
+public class Main {
+  public static void main(String[] args) {
+    JavaMoney money1 = new JavaMoney(1_000L);
+    JavaMoney money2 = money1;
+    JavaMoney money3 = new JavaMoney(1_000L);
+    
+    System.out.println(money1 == money2); // true, 동일성
+    System.out.println(money1 == money3); // false
+    System.out.println(money1.equals(money3)); // true, 동등성
+  }
+}
+```
+
+</td>
+<td>
+
+```kotlin
+fun main() {
+  val money1 = JavaMoney(2_000L)
+  val money2 = money1
+  val money3 = JavaMoney(2_000L)
+  
+  println(money1 === money2) // ture, 동일성
+  println(money1 === money3) // false
+  println(money1 == money3) // ture, 동등성 
+}
+
+```
+</td>
+</tr>
+<tr>
+    <td>
+        - 자바에서는 동일성에 ==을 사용하고, 동등성에 equals를 직접 호출 <br/>
+    </td>
+    <td>
+        - 코틀린에서는 동일성에 ===을 사용하고, 동등성에 ==을 호출 -> ==을 사용하면 간접적으로 equals를 호출해준다. <br/>
+</td>
+</tr>
+</table>
+
+### 3. 논리 연산자 / 코틀린에 있는 특이한 연산자
+#### 논리 연산자
+- 자바와 코틀린이 완전히 동일하다.
+- 자바처럼 코틀린에서도 Lazy 연산을 수행한다.
+
+```kotlin
+fun main() {
+    if (fun1() || fun2()) { // fun1()이 true이므로, fun2()을 호출하지 않고 바로 "본문"을 출력한다. -> lazy 연산
+        println("본문")
+    }
+
+    // 결과
+    // fun1
+    // 본문
+
+    if(fun2() && fun1()) { // fun1()이 false이므로, fun1()을 호출하지 않고 바로 "본문"을 출력한다. -> lazy 연산
+        println("본문")
+    }
+
+    // 결과
+    // fun2
+    // 본문
+
+}
+ 
+fun fun1(): Boolean {
+    println("fun1")
+    return true
+}
+ 
+fun fun2(): Boolean {
+    println("fun2")
+    return false
+}
+
+```
+
+#### 코틀린에 있는 특이한 연산자
+1. in / !in
+- 컬렉션이나 범위에 포함되어 있다. 포함되어 있지 않다.
+2. a..b
+- a부터 b까지의 범위 객체를 생성한다.
+3. a[i]
+- a에서 특정 index i로 값을 가져온다.
+```kotlin
+val str = "ABC"
+println(str[2]) // C
+```
+4. a[i] = b
+- a에서 특정 index i에 b를 넣는다.
+
+
+### 4. 연산자 오버로딩
+- 코틀린에서는 객체마다 연산자를 직접 정의할 수 있다.
+```kotlin
+data class Money (
+    val amount: Long
+) {
+    operator fun plus(other: Money): Money {
+        return Money(this.amount + other.amount)
+    }
+}
+
+fun main() {
+    val money1 = Money(2_000L)
+    val money2 = Money(1_000L)
+    println(money1 + money2)
+    
+    // 결과
+    Money(amount=3000)
+}
+```
+
+
+
+
 <table>
 <tr>
   <td>Java</td>
